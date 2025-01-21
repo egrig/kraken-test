@@ -25,7 +25,14 @@ Ensure you have Python 3 and Node.js installed on your system. The current proje
 - Node.js 18.5.0
 
 ## Installation
-### 1. Frontend: Choose 1 of 2 ways below:
+### Option 1: Using Docker Compose (Recommended)
+The simplest way to run the application is using Docker Compose:
+
+```shell
+docker compose up -d
+```
+**Access the web application at [http://localhost:4200](http://localhost:4200).**
+### Option: 2 Frontend: Choose 1 of 2 ways below:
 - Install frontend dependencies and start frontend locally:
 ```shell
 npm --prefix=frontend install
@@ -39,7 +46,7 @@ npm --prefix=frontend install
 npm --prefix=frontend run build
 ```
 
-### 2. Backend:
+### Option: 2 Backend:
 - Set up a virtual environment
 ```shell
 # Install environment and dependencies
