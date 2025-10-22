@@ -1,5 +1,4 @@
-# Docker Compose file
-# Save this in `docker-compose.yml`
+# Docker Compose file for running the RealWorld application
 version: '3.8'
 
 services:
