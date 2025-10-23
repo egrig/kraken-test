@@ -313,7 +313,6 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # 4. Start Docker daemon (ignore ulimit warnings)
 dockerd > /var/log/docker.log 2>&1 &
-sleep 5
 
 # 5. Install Node.js 18
 curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
@@ -325,7 +324,6 @@ cd kraken-test
 
 # 7. Start application services
 docker compose up -d backend frontend
-sleep 30
 
 # 8. Verify services are running
 curl http://localhost:8000/api/
@@ -339,14 +337,6 @@ npx playwright install --with-deps chromium
 # 10. Run tests
 npm test
 ```
-
-### Important Notes for Container Testing
-
-- **Privileged mode is required**: Use `docker run -it --privileged ...`
-- **Manual Docker daemon start**: Run `dockerd > /var/log/docker.log 2>&1 &` and wait ~5 seconds
-- **Ignore ulimit warnings**: The message `/etc/init.d/docker: 62: ulimit: error setting limit (Invalid argument)` is harmless
-- **System dependencies are critical**: Always use `--with-deps` flag with Playwright install
-- **Port mapping**: Ensure ports 4200 and 8000 are mapped from container to host
 
 ### Architecture
 ```
