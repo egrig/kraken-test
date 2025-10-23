@@ -4,24 +4,37 @@ This repository contains a comprehensive end-to-end test suite for the [RealWorl
 
 ## 📋 Test Coverage
 
-### Core User Journeys (7 tests)
-- **Authentication** (`auth.spec.ts`)
-  - Register a new user
-  - Login successfully
-  - Login with wrong password shows error
+**Total: 9 Tests across 4 Test Files**
 
-- **Article Management** (`article.spec.ts`)
-  - Create article with tags, appears in My Articles
-  - Edit and delete article
-  - Tag filter shows only matching articles
+### Authentication (3 tests)
+- **File**: `auth.spec.ts`
+- Register a new user
+- Login successfully
+- Login with wrong password shows error
 
-- **Social Features** (`follow-feed.spec.ts`)
-  - User A follows B; B publishes; A sees in My Feed
+### Article Management (3 tests)
+- **File**: `article.spec.ts`
+- Create article with tags, appears in My Articles
+- Edit and delete article
+- Tag filter shows only matching articles
+
+### Social Features (1 test)
+- **File**: `follow-feed.spec.ts`
+- User A follows B; B publishes; A sees in My Feed
 
 ### Authorization & Profile (2 tests)
-- **Authorization & Profile** (`authorization.spec.ts`)
-  - Profile bio update reflects on public profile
-  - Unauthorized user cannot edit another user's article
+- **File**: `authorization.spec.ts`
+- Profile bio update reflects on public profile
+- Unauthorized user cannot edit another user's article
+
+## 🔧 Technology Stack
+
+- **Language**: TypeScript
+- **Testing Framework**: Playwright v1.56.1
+- **Test Runner**: @playwright/test
+- **Configuration**: YAML (`config.yaml`) with environment variable overrides
+- **Runtime**: Node.js v18+
+- **Application Stack**: Docker Compose (Django REST API + Angular SPA)
 
 ## 📖 Quick Navigation
 
@@ -60,7 +73,7 @@ cd kraken-test
 docker compose up -d backend frontend
 ```
 
-Wait for services to be ready (~30 seconds):
+Wait for services to be ready (~60 seconds):
 
 ```bash
 # Verify backend is running
@@ -107,25 +120,41 @@ BASE_URL=http://localhost:4200 npx playwright test --ui
 
 ## ⚙️ Configuration
 
-### Environment Variables
+The test suite uses a **YAML configuration file** (`e2e/config.yaml`) to specify parameters like:
+- **Domain/Base URL**: Application URL to test against
+- **Account Details**: Default user credentials for test data
+- **Test Parameters**: Passwords and other configurable values
 
-You can override default configuration using environment variables:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `BASE_URL` | Frontend URL | `http://localhost:4200` |
-| `USER_PASSWORD` | Default password for test users | `Test1234!` |
-
-### Configuration File
+### Configuration File (`config.yaml`)
 
 Edit `e2e/config.yaml` to change defaults:
 
 ```yaml
 baseUrl: http://localhost:4200
 defaultUser:
-  email: user@example.com
-  password: Test1234!
+  email: testuser@example.com
+  password: TestPassword123!
   username: testuser
+```
+
+**Parameters:**
+- `baseUrl` - Frontend application URL (domain)
+- `defaultUser.email` - Default email for test users
+- `defaultUser.username` - Default username for test users
+- `defaultUser.password` - Default password for test accounts
+
+### Environment Variable Overrides
+
+You can override YAML configuration using environment variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `BASE_URL` | Frontend URL (overrides `baseUrl` in YAML) | `http://localhost:4200` |
+| `USER_PASSWORD` | Default password for test users | `TestPassword123!` |
+
+**Example:**
+```bash
+BASE_URL=https://staging.example.com npx playwright test
 ```
 
 ## 📊 Viewing Test Results
@@ -291,6 +320,7 @@ Then go to [Quick Start](#-quick-start).
 **Use case:** Validate the entire setup process in an isolated container environment (useful for Mac/Windows users wanting to test on Linux, or for CI/CD validation).
 
 ### Prerequisites
+- **Docker Desktop (macOS/Windows) or Docker Engine (Linux) must be installed and running on your host machine**
 - Docker must run in **privileged mode** for Docker-in-Docker to work
 - The Docker daemon must be started manually inside the container
 
@@ -313,6 +343,7 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # 4. Start Docker daemon (ignore ulimit warnings)
 dockerd > /var/log/docker.log 2>&1 &
+sleep 5
 
 # 5. Install Node.js 18
 curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
@@ -324,6 +355,7 @@ cd kraken-test
 
 # 7. Start application services
 docker compose up -d backend frontend
+sleep 60
 
 # 8. Verify services are running
 curl http://localhost:8000/api/
@@ -372,7 +404,7 @@ jobs:
         run: docker compose up -d backend frontend
       
       - name: Wait for services
-        run: sleep 30
+        run: sleep 60
       
       - name: Install dependencies
         working-directory: ./e2e
@@ -400,13 +432,14 @@ jobs:
 2. Import required utilities:
    ```typescript
    import { test, expect } from '@playwright/test';
-   import * as yaml from 'yaml';
-   import * as fs from 'fs';
+   import fs from 'fs';
+   import yaml from 'yaml';
    ```
 3. Load configuration:
    ```typescript
    const cfg = yaml.parse(fs.readFileSync('./config.yaml', 'utf8'));
-   const BASE_URL = process.env.BASE_URL || cfg.baseUrl;
+   const BASE_URL = process.env.BASE_URL || cfg.baseUrl || 'http://localhost:4200';
+   const USER_PASSWORD = process.env.USER_PASSWORD || cfg.defaultUser.password;
    ```
 4. Use descriptive test names and organize with `test.describe()` blocks
 

@@ -4,6 +4,7 @@ import yaml from 'yaml';
 
 const cfg = yaml.parse(fs.readFileSync('./config.yaml', 'utf8'));
 const BASE_URL = process.env.BASE_URL || cfg.baseUrl || 'http://localhost:4200';
+const USER_PASSWORD = process.env.USER_PASSWORD || cfg.defaultUser.password;
 
 async function register(page, email: string, password: string, username: string) {
   await page.goto(BASE_URL + '/#/register');
@@ -26,8 +27,8 @@ async function login(page, email: string, password: string) {
 test.describe.serial('Follow feed', () => {
   test('User A follows B; B publishes; A sees in My Feed', async ({ page, browser }) => {
     const ts = Date.now();
-    const A = { email: `a${ts}@example.com`, password: 'Pass123!x', username: `userA${ts}` };
-    const B = { email: `b${ts}@example.com`, password: 'Pass123!x', username: `userB${ts}` };
+    const A = { email: `a${ts}@example.com`, password: USER_PASSWORD, username: `userA${ts}` };
+    const B = { email: `b${ts}@example.com`, password: USER_PASSWORD, username: `userB${ts}` };
 
     // Register both users
     await register(page, A.email, A.password, A.username);

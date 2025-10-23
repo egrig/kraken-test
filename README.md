@@ -76,3 +76,35 @@ python backend/manage.py runserver
 ```
 
 Now, your local server should be running, and you can access this Django/Angular application through your web browser at http://localhost:8000.
+
+# Testing
+
+This project includes a comprehensive end-to-end test suite with **9 tests** covering:
+- Authentication (registration, login, error handling)
+- Article management (CRUD operations, tag filtering)
+- Social features (follow/feed functionality)
+- Authorization and profile management
+
+**Technology Stack:**
+- TypeScript + Playwright
+- Headless browser testing
+- YAML-based configuration
+- Docker Compose integration
+
+See **[e2e/README.md](e2e/README.md)** for complete testing documentation including:
+- Quick start guide
+- Platform-specific setup (Ubuntu, macOS, Windows)
+- CI/CD integration examples
+- Troubleshooting
+
+**Quick Test Run:**
+```shell
+# Start application
+docker compose up -d backend frontend
+
+# Run tests
+cd e2e
+npm install
+npx playwright install --with-deps chromium
+npm test
+```
