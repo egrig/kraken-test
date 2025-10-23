@@ -23,14 +23,29 @@ This repository contains a comprehensive end-to-end test suite for the [RealWorl
   - Profile bio update reflects on public profile
   - Unauthorized user cannot edit another user's article
 
+## 📖 Quick Navigation
+
+**Choose your path:**
+
+1. **Already have Docker & Node.js installed?** → Go to [Quick Start](#-quick-start)
+2. **Fresh Ubuntu/Linux machine?** → Start with [Fresh Ubuntu/Debian Linux Machine](#fresh-ubuntudebian-linux-machine)
+3. **macOS user?** → See [macOS Setup](#macos)
+4. **Windows user?** → See [Windows Setup](#windows)
+5. **Want to test in a container (Docker-in-Docker)?** → See [Testing in Linux Containers](#-testing-in-linux-containers-docker-in-docker)
+
 ## 🛠 Prerequisites
 
+You need the following installed on your system:
 - **Docker Desktop** (macOS/Windows) or **Docker Engine** (Linux)
 - **Docker Compose** v2.0+
 - **Node.js** v18+
 - **Git**
 
+> **📍 Don't have these installed?** Jump to [Platform-Specific Setup](#-platform-specific-setup) for installation instructions, then come back here.
+
 ## 🚀 Quick Start
+
+> **Note:** This guide assumes you already have Docker, Node.js, and Git installed. If not, see [Platform-Specific Setup](#-platform-specific-setup) first.
 
 ### 1. Clone the Repository
 
@@ -57,7 +72,7 @@ curl http://localhost:4200
 
 You should see JSON response from backend and HTML from frontend.
 
-### 3. Run Tests
+### 3. Install Test Dependencies
 
 ```bash
 cd e2e
@@ -65,7 +80,19 @@ cd e2e
 # Install dependencies (first time only)
 npm install
 
+# Install Playwright browsers (REQUIRED on fresh Linux systems)
+npx playwright install --with-deps chromium
+```
+
+> **Note:** The `--with-deps` flag is **required** on fresh Linux installations. It installs all system dependencies (fonts, libraries, codecs) needed for browser automation.
+
+### 4. Run Tests
+
+```bash
 # Run all tests
+npm test
+
+# Or with explicit BASE_URL
 BASE_URL=http://localhost:4200 npx playwright test
 
 # Run specific test file
@@ -193,27 +220,145 @@ docker compose build --no-cache
 docker compose up -d backend frontend
 ```
 
-## 🌐 Running on Different Platforms
+## 🌐 Platform-Specific Setup
 
-The test suite runs on any platform with Node.js and Docker:
+Choose your platform and follow the installation instructions, then return to the [Quick Start](#-quick-start) section.
+
+### Fresh Ubuntu/Debian Linux Machine
+
+If you're on a fresh Ubuntu or Debian system, install all prerequisites:
+
+```bash
+# 1. Update package list
+sudo apt-get update
+
+# 2. Install Git and curl
+sudo apt-get install -y git curl
+
+# 3. Install Docker and Docker Compose
+sudo apt-get install -y ca-certificates gnupg lsb-release
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+# 4. Start Docker service
+sudo service docker start
+
+# 5. Install Node.js 18
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo bash -
+sudo apt-get install -y nodejs
+
+# 6. Verify installations
+git --version
+docker --version
+docker compose version
+node --version
+npm --version
+```
+
+✅ **All prerequisites installed!** Now go to [Quick Start](#-quick-start) to clone the repo and run tests.
+
+---
 
 ### macOS
+
 ```bash
 # Using Homebrew
 brew install docker
 brew install node
+brew install git  # Usually pre-installed
 ```
+
+Then go to [Quick Start](#-quick-start).
+
+---
 
 ### Windows
-Install Docker Desktop and Node.js from their official websites.
 
-### Linux (Ubuntu)
+Install these from official websites:
+1. **Docker Desktop**: https://www.docker.com/products/docker-desktop
+2. **Node.js v18+**: https://nodejs.org/
+3. **Git**: https://git-scm.com/download/win
+
+Then go to [Quick Start](#-quick-start).
+
+## 🐧 Testing in Linux Containers (Docker-in-Docker)
+
+> **⚠️ Special Scenario:** This section is for testing the setup inside a Docker container (Docker-in-Docker). If you're on an actual Ubuntu/Linux machine, use [Fresh Ubuntu/Debian Linux Machine](#fresh-ubuntudebian-linux-machine) instead.
+
+**Use case:** Validate the entire setup process in an isolated container environment (useful for Mac/Windows users wanting to test on Linux, or for CI/CD validation).
+
+### Prerequisites
+- Docker must run in **privileged mode** for Docker-in-Docker to work
+- The Docker daemon must be started manually inside the container
+
+### Complete Setup from Scratch
+
 ```bash
-sudo apt-get update
-sudo apt-get install -y docker.io docker-compose-plugin nodejs npm
+# 1. On your host machine: Create Ubuntu container in privileged mode
+docker run -it --privileged --name ubuntu-test -p 4200:4200 -p 8000:8000 ubuntu:22.04 bash
+
+# 2. Inside the container: Install prerequisites
+apt-get update
+apt-get install -y git curl ca-certificates gnupg lsb-release
+
+# 3. Install Docker
+mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+apt-get update
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+# 4. Start Docker daemon (ignore ulimit warnings)
+dockerd > /var/log/docker.log 2>&1 &
+sleep 5
+
+# 5. Install Node.js 18
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+apt-get install -y nodejs
+
+# 6. Clone and setup the project
+git clone https://github.com/egrig/kraken-test.git
+cd kraken-test
+
+# 7. Start application services
+docker compose up -d backend frontend
+sleep 30
+
+# 8. Verify services are running
+curl http://localhost:8000/api/
+curl -I http://localhost:4200
+
+# 9. Install test dependencies
+cd e2e
+npm install
+npx playwright install --with-deps chromium
+
+# 10. Run tests
+npm test
 ```
 
-Then follow the Quick Start instructions above.
+### Important Notes for Container Testing
+
+- **Privileged mode is required**: Use `docker run -it --privileged ...`
+- **Manual Docker daemon start**: Run `dockerd > /var/log/docker.log 2>&1 &` and wait ~5 seconds
+- **Ignore ulimit warnings**: The message `/etc/init.d/docker: 62: ulimit: error setting limit (Invalid argument)` is harmless
+- **System dependencies are critical**: Always use `--with-deps` flag with Playwright install
+- **Port mapping**: Ensure ports 4200 and 8000 are mapped from container to host
+
+### Architecture
+```
+Host Machine
+└── Ubuntu Container (privileged mode)
+    ├── Docker Daemon
+    │   ├── Backend Container (Django on :8000)
+    │   └── Frontend Container (Angular on :4200)
+    └── Test Environment (Ubuntu host)
+        ├── Node.js/npm
+        └── Playwright tests → http://localhost:4200
+```
 
 ## 🎯 CI/CD Integration
 
