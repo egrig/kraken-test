@@ -63,8 +63,8 @@ You need the following installed on your system:
 ### 1. Clone the Repository
 
 ```bash
-git clone git@github.com:egrig/kraken-test.git
-cd kraken-test
+git clone git@github.com:egrig/edwardg-test.git
+cd edwardg-test
 ```
 
 ### 2. Start the Application (Backend + Frontend)
@@ -350,8 +350,8 @@ curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 apt-get install -y nodejs
 
 # 6. Clone and setup the project
-git clone https://github.com/egrig/kraken-test.git
-cd kraken-test
+git clone https://github.com/egrig/edwardg-test.git
+cd edwardg-test
 
 # 7. Start application services
 docker compose up -d backend frontend
